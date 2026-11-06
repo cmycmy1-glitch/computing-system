@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>하드웨어 구성요소와 관계 이해하기</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--ink:#1c2333;--sub:#5b6478;--line:#d9deea;--pri:#3b5bdb;--priS:#e7ecff;--ok:#1f9d55;--okS:#e3f6ea;--no:#d6336c;--noS:#fde8f0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151d;--card:#1b2030;--ink:#eef1f8;--sub:#a3acc2;--line:#2c3350;--pri:#8ea2ff;--priS:#242c52;--ok:#4cd98a;--okS:#17372a;--no:#ff7aa8;--noS:#3b1c2b}}
+:root[data-theme="dark"]{--bg:#12151d;--card:#1b2030;--ink:#eef1f8;--sub:#a3acc2;--line:#2c3350;--pri:#8ea2ff;--priS:#242c52;--ok:#4cd98a;--okS:#17372a;--no:#ff7aa8;--noS:#3b1c2b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;line-height:1.55}
+.wrap{max-width:820px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:8px 0 2px}h2{font-size:18px;margin:0 0 6px}h3{font-size:15px;margin:14px 0 6px}
+.sub{color:var(--sub);font-size:14px;margin:0 0 10px}
+.who{display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap}
+.who input{flex:1;min-width:110px}
+.tabs{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}
+.tab{flex:1;min-width:110px;padding:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font:inherit;font-weight:600;cursor:pointer}
+.tab small{display:block;font-size:12px;font-weight:400;opacity:.85}
+.tab.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
+.badge{display:inline-block;background:var(--priS);color:var(--pri);font-size:12px;font-weight:700;padding:2px 9px;border-radius:99px;margin-bottom:6px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 9px;max-width:100%}
+input.n{width:84px;text-align:center}input.t{width:150px}
+textarea{width:100%;min-height:60px;resize:vertical}
+table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid var(--line);padding:9px 6px;text-align:left;vertical-align:middle;font-size:15px}
+th{color:var(--sub);font-size:13px}
+.btn{background:var(--pri);color:#fff;border:0;border-radius:10px;padding:11px 18px;font:inherit;font-weight:700;cursor:pointer;margin:6px 6px 0 0}
+.btn.g{background:var(--priS);color:var(--pri)}.btn.s{background:var(--ok);color:#fff}
+.msg{color:var(--no);font-size:14px;min-height:20px;margin-top:4px}
+.hide{display:none}
+.map{display:grid;gap:8px}
+.mi{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:1fr auto 1.6fr;gap:8px;align-items:center;font-size:14px}
+.mi b.v{color:var(--pri)}
+.arrow{color:var(--sub)}
+.tag{display:inline-block;background:var(--priS);color:var(--pri);border-radius:6px;padding:1px 8px;font-weight:700;font-size:13px}
+@media(max-width:560px){.mi{grid-template-columns:1fr}.arrow{display:none}}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--line);padding:9px 0}
+.row .nm{min-width:120px;font-weight:600}
+.fb{flex-basis:100%;font-size:13px;padding:6px 10px;border-radius:8px;margin-top:2px}
+.ok{background:var(--okS);color:var(--ok)}.no{background:var(--noS);color:var(--no)}
+select.ok{border-color:var(--ok)}select.no{border-color:var(--no)}
+.opts{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+.opt{flex:1;min-width:90px}
+.opt input{position:absolute;opacity:0}
+.opt span{display:block;text-align:center;padding:10px;border:1px solid var(--line);border-radius:10px;cursor:pointer;font-weight:600}
+.opt input:checked+span{background:var(--priS);border-color:var(--pri);color:var(--pri)}
+.q{border-top:1px solid var(--line);padding:12px 0}
+.quote{background:var(--priS);color:var(--pri);padding:8px 12px;border-radius:10px;font-weight:700}
+.score{font-weight:700;margin:8px 0}
+#ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;display:none;overflow:auto;padding:16px}
+#ov .box{max-width:700px;margin:0 auto;background:var(--card);border-radius:14px;padding:14px}
+#ov img{width:100%;border:1px solid var(--line);border-radius:8px}
+.tree{text-align:center;margin:8px 0 12px}.tn{display:inline-block;border-radius:8px;padding:6px 14px;font-weight:700;color:#fff;font-size:14px}.t0{background:#2b8a8a}.t1{background:#3b4a9c}.t2{background:#4c6ef5}.t3{background:#5c7cfa}.tg{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px}.tgc{flex:1;min-width:260px;max-width:480px;border-top:2px solid var(--line);padding-top:8px}.tk{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px}.tk div{flex:1;min-width:110px}.tk small{display:block;color:var(--ink);font-weight:400;text-align:left;font-size:12.5px;margin-top:4px;line-height:1.45}.cmp{overflow-x:auto}.cmp table{min-width:560px}.cmp th,.cmp td{border:1px solid var(--line);padding:8px 9px;font-size:14px}.cmp thead th{background:var(--priS);color:var(--pri);font-size:14px}.cmp td:first-child{font-weight:700;background:var(--bg)}
+.capH{display:flex;justify-content:space-between;font-size:13px;color:var(--sub);margin-bottom:6px}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<style>
+/* 학습지 감성 테마 */
+:root{--bg:#f5efe2;--card:#fffdf7;--ink:#2a2733;--sub:#716a5c;--line:#e3d9c2;--pri:#2c4b86;--priS:#fdf0c4;--hl:#ffd75e;--ok:#23804f;--okS:#e1f3e4;--no:#c2410c;--noS:#fde9dc;--fh:'Jua','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1a17;--card:#26231f;--ink:#f3ecdc;--sub:#b3aa97;--line:#3d382f;--pri:#a9c0f2;--priS:#3a3320;--hl:#e9b949;--ok:#6fd19a;--okS:#1d3326;--no:#ffa270;--noS:#3d2418}}
+body{background-color:var(--bg);background-image:radial-gradient(var(--line) 1.2px,transparent 1.2px);background-size:24px 24px}
+h1,h2,h3,.badge,.tab,.btn,.score{font-family:var(--fh);font-weight:400;letter-spacing:-.2px}
+h1{display:inline-block;font-size:30px;margin:10px 0 4px;background:linear-gradient(transparent 62%,var(--hl) 62%);padding:0 4px}
+h2{font-size:21px}
+.card{border:1.5px solid var(--ink);border-radius:6px;box-shadow:5px 5px 0 var(--line)}
+.tabs{gap:5px;border-bottom:2px solid var(--ink);margin:14px 0 14px;align-items:flex-end}
+.tab{border:1.5px solid var(--ink);border-bottom:0;border-radius:9px 9px 0 0;background:transparent;color:var(--sub);margin-bottom:-2px;padding:8px 6px 7px;font-size:17px;line-height:1.25;transition:.15s}
+.tab:hover{background:var(--priS);color:var(--ink)}
+.tab.on{background:var(--hl);color:#2a2733;border-color:var(--ink);padding-bottom:10px}
+.tab small{font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;font-size:11.5px;margin-top:2px}
+.btn{background:var(--hl);color:#2a2733;border:1.5px solid var(--ink);border-radius:8px;box-shadow:3px 3px 0 var(--ink);font-size:16px;padding:9px 17px;transition:transform .08s,box-shadow .08s}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+.btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+.btn.g{background:var(--card);color:var(--ink)}
+.btn.s{background:#9ad9b0;color:#14301f}
+.btn:disabled{opacity:.35;box-shadow:none;transform:none;cursor:default}
+.badge{background:var(--hl);color:#2a2733;border-radius:3px;transform:rotate(-2deg);padding:2px 10px;font-size:13px}
+.quote{background:var(--priS);color:var(--ink);border-left:5px solid var(--hl);border-radius:3px;font-weight:600}
+.tag{background:transparent;color:var(--ink);border:1.5px dashed var(--sub);border-radius:99px;padding:1px 10px}
+input,select,textarea{background:var(--card);border:1.5px solid var(--line);border-radius:4px;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--ink);box-shadow:0 2px 0 var(--hl)}
+.opt span{border:1.5px solid var(--line);border-radius:6px;background:var(--card);transition:.12s}
+.opt span:hover{border-color:var(--ink)}
+.opt input:checked+span{background:var(--hl);color:#2a2733;border-color:var(--ink);box-shadow:2px 2px 0 var(--ink)}
+.mi{border:1.5px dashed var(--line);border-radius:6px;background:var(--card)}
+.mi b.v{color:var(--pri)}
+hr{border-top:1.5px dashed var(--line)!important}
+th{font-family:var(--fh);font-weight:400;font-size:14px}
+.cmp thead th{background:var(--priS);color:var(--ink)}
+.tn{border-radius:5px;font-family:var(--fh);font-weight:400;letter-spacing:0}
+.q,.row,td{border-color:var(--line)}
+#s4 .hint{background:#fff3bf;color:#5c4300;border-radius:2px;box-shadow:2px 3px 0 rgba(0,0,0,.12);transform:rotate(-.4deg);border-left:0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #s4 .hint{background:#4a3f17;color:#ffe9a3}}
+#s4 .dots i.on{background:var(--ink)}
+.capH{border-bottom:1.5px dashed var(--line);padding-bottom:6px;margin-bottom:10px}
+.alertbar{background:#d62f1a;color:#fff;font-weight:700;font-size:16px;line-height:1.5;padding:12px 14px;border-radius:6px;border:2px solid #7f1708;margin-top:10px;animation:shk .45s}
+.who input.miss{border:2px solid #d62f1a;background:#ffe3dd;color:#2a2733;animation:shk .45s}
+.who.warn b{color:#d62f1a}
+table input.n{width:min(100%,270px);text-align:left}
+table input.t{width:min(100%,270px)}
+@keyframes shk{20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>하드웨어 구성요소와 관계 이해하기</h1>
+  <p class="sub">입력·출력·연산·제어·기억장치의 역할을 알고, 서로 어떻게 함께 일하는지 탐구해요.</p>
+  <div class="who"><b>제출자</b><input id="sch" placeholder="학교 (예: 수원중)"><input id="sid" placeholder="학번 (예: 10101)" inputmode="numeric"><input id="snm" placeholder="이름 (예: 홍길동)"><input id="nm" type="hidden"></div>
+  <div class="alertbar hide" id="nameAlert"></div>
+  <div class="tabs">
+    <button class="tab on" data-t="0">1단계<small>스마트폰 스펙으로 역할 연결</small></button>
+    <button class="tab" data-t="1">2단계<small>용도에 맞는 부품 고르기</small></button>
+    <button class="tab" data-t="2">3단계<small>RAM과 내장 메모리 구별</small></button>
+    <button class="tab" data-t="3">4단계<small>기억장치 한눈에 비교</small></button>
+    <button class="tab" data-t="4">5단계<small>부품이 함께 일하는 과정</small></button>
+  </div>
+
+  <!-- 1단계 -->
+  <section id="s0">
+    <div id="cap0" class="card">
+      <div class="capH"><span>1단계 · 스마트폰 스펙 조사 & 하드웨어 역할 연결</span><span>제출자: <b class="whoN">-</b></span></div>
+      <span class="badge">준비</span>
+      <h2>컴퓨터는 무엇으로 이루어져 있을까?</h2>
+      <div class="tree"><span class="tn t0">컴퓨터</span>
+        <div class="tg">
+          <div class="tgc"><span class="tn t1">하드웨어</span> <span class="sub">눈에 보이는 기계 장치</span>
+            <div class="tk">
+              <div><span class="tn t2">입력장치</span><small>데이터·명령을 컴퓨터에 넣어요.<br>예) 카메라, 마이크, 터치스크린</small></div>
+              <div><span class="tn t2">출력장치</span><small>처리 결과를 사람에게 보여줘요.<br>예) 디스플레이, 스피커</small></div>
+              <div><span class="tn t2">중앙처리장치</span><small><b>연산</b>(계산·비교)과 <b>제어</b>(모든 장치에 명령·조절)를 해요. 컴퓨터의 두뇌! 폰에서는 AP가 해요.</small></div>
+              <div><span class="tn t2">기억장치</span><small><b>주기억</b>(RAM·ROM): RAM은 작업 중인 내용을 잠시 저장, ROM은 기본 프로그램을 보관<br><b>보조기억</b>: 자료를 오래 보관</small></div>
+            </div></div>
+          <div class="tgc"><span class="tn t1">소프트웨어</span> <span class="sub">하드웨어를 움직이는 프로그램</span>
+            <div class="tk">
+              <div><span class="tn t3">시스템 소프트웨어</span><small>하드웨어를 관리하고 앱이 실행되게 해요.<br>예) 안드로이드, iOS</small></div>
+              <div><span class="tn t3">응용 소프트웨어</span><small>사용자가 특정 목적으로 쓰는 프로그램이에요.<br>예) 카카오톡, 게임, 카메라 앱</small></div>
+            </div></div>
+        </div></div>
+      <p class="sub">오늘은 이 중 <b>하드웨어</b>를 스마트폰 스펙으로 확인해 봐요.</p>
+      <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+      <span class="badge">활동 ①</span>
+      <h2>내 스마트폰 스펙 조사하기</h2>
+      <p class="sub">인터넷 검색을 통해 스마트폰 스펙을 조사합니다.</p>
+      <table>
+        <tr><th>하드웨어 부품</th><th>기기의 스펙 (값 적기)</th></tr>
+        <tr><td>조사한 스마트폰</td><td><input class="t" id="i_model" style="width:100%" placeholder="예) 갤럭시 S24, 아이폰 15"></td></tr>
+        <tr><td>디스플레이(화면)</td><td>화면 크기 <input class="n" id="i_in" placeholder="예) 6.7"> 인치<br>주사율 <input class="n" id="i_hz" placeholder="예) 120 (범위면 60~120)" style="margin-top:6px"> Hz</td></tr>
+        <tr><td>카메라</td><td>메인 화소 <input class="n" id="i_cam" placeholder="예) 5000만, 2억"> 화소</td></tr>
+        <tr><td>AP / CPU</td><td>칩셋 이름 <input class="t" id="i_ap"></td></tr>
+        <tr><td>RAM(메모리)</td><td>용량 <input class="n" id="i_ram" placeholder="예) 8 (여러 개면 8/12)"> GB</td></tr>
+        <tr><td>저장 용량</td><td>용량 <input class="n" id="i_sto" placeholder="예) 256 (여러 개면 128/256/512)"> GB</td></tr>
+        <tr><td>배터리</td><td>용량 <input class="n" id="i_bat" placeholder="예) 5000"> mAh</td></tr>
+        
+        <tr><td>기타 사양</td><td><input class="t" id="i_etc" style="width:100%" placeholder="예) 방수, 5G, 지문인식 등 (선택)"></td></tr>
+      </table>
+      <div class="msg" id="m1"></div>
+      <button class="btn" id="done1">입력완료</button>
+
+      <div id="p2" class="hide">
+        <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+        <span class="badge">활동 ②</span>
+        <h2>내가 조사한 스펙 = 컴퓨터의 5대 요소</h2>
+        <p class="sub">스마트폰도 작은 컴퓨터! 조사한 용어가 어떤 하드웨어 역할인지 확인해요.</p>
+        <div class="map" id="map"></div>
+        <button class="btn g" id="to3">다음: 스스로 연결해 보기 ▶</button>
+      </div>
+
+      <div id="p3" class="hide">
+        <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+        <span class="badge">활동 ③</span>
+        <h2>역할 스스로 연결하기</h2>
+        <p class="sub">각 부품이 어떤 역할인지 골라 보세요. 다 고른 뒤 <b>정답 공개</b>를 눌러요.</p>
+        <div id="mt"></div>
+        <div class="score" id="sc1"></div>
+      </div>
+    </div>
+    <div id="act1" class="hide"><button class="btn" id="chk1">정답 공개</button><button class="btn s" id="sv0">🖼 화면 이미지로 저장 (제출용)</button></div>
+  </section>
+
+  <!-- 2단계 -->
+  <section id="s1" class="hide">
+    <div id="cap1" class="card">
+      <div class="capH"><span>2단계 · 하드웨어 성능과 가격, 나에게 필요한 부품은?</span><span>제출자: <b class="whoN">-</b></span></div>
+      <p class="sub">성능이 좋은 부품일수록 비싸요. 한정된 예산에서는 <b>내 사용 습관에 가장 중요한 부품</b>에 투자해야 합니다. 각 유저에게 가장 중요한 부품을 고르고 이유를 써 보세요.</p>
+      <div id="qs"></div>
+      <div class="q"><b>마무리 생각</b><br><span class="sub">나는 어떤 유저인가요? 폰을 살 때 가장 중요하게 볼 부품과 그 이유는?</span>
+        <textarea id="free"></textarea></div>
+      <div class="q"><span class="badge">내 스펙 조합하기</span><h2>100점으로 나만의 스마트폰 만들기</h2>
+        <p class="sub">성능이 높을수록 가격(점수)이 높아요. 내 예산은 <b>총 100점</b>! 모든 부품을 최고로 살 수 없으니, 중요한 부품에 더 많이 투자해 보세요.</p>
+        <div class="row"><span class="nm">나는 이런 유저</span><select id="ut"><option value="">선택</option><option value="g">🎮 게임을 자주 하는 유저</option><option value="p">📷 사진·영상을 많이 찍는 유저</option><option value="m">📱 앱을 여러 개 동시에 쓰는 유저</option><option value="v">💰 가성비 중시 유저 (60점 이하)</option></select></div>
+        <div id="sp"></div>
+        <div class="quote" id="pt" style="margin-top:10px">사용 점수 0 / 100</div>
+        <div style="height:10px;border-radius:99px;background:var(--line);margin:6px 0"><div id="pb" style="height:100%;width:0;border-radius:99px;background:var(--pri)"></div></div>
+        <div id="cf"></div>
+        <div class="sub" style="margin-top:8px">이 조합을 고른 이유 (어느 부품에 점수를 많이 썼는지 포함)</div>
+        <textarea id="cfr"></textarea></div>
+      <div class="score" id="sc2"></div>
+    </div>
+    <button class="btn" id="chk2">정답 확인</button><button class="btn s" id="sv1">🖼 화면 이미지로 저장 (제출용)</button>
+  </section>
+
+  <!-- 3단계 -->
+  <section id="s2" class="hide">
+    <div id="cap2" class="card">
+      <div class="capH"><span>3단계 · RAM vs 내장 메모리(저장장치) 구별하기</span><span>제출자: <b class="whoN">-</b></span></div>
+      <span class="badge">개요</span>
+      <h2>RAM과 내장 메모리, 무엇이 다를까?</h2>
+      <p class="sub"><b>학습 목표:</b> 스마트폰의 RAM과 내장 메모리(저장장치)의 역할 차이를 설명하고, 상황에 맞게 구별할 수 있다.</p>
+      <div class="cmp"><table>
+        <thead><tr><th>구분</th><th>RAM</th><th>내장 메모리</th></tr></thead>
+        <tr><td>하는 일</td><td>지금 실행 중인 작업을 잠시 올려 둠</td><td>사진·영상·앱 파일을 오래 보관</td></tr>
+        <tr><td>전원을 끄면?</td><td>내용이 사라짐</td><td>내용이 그대로 남음</td></tr>
+        <tr><td>속도·용량</td><td>빠르지만 용량은 작은 편 (8~12GB)</td><td>RAM보다 느리지만 용량은 큼 (128~512GB)</td></tr>
+        <tr><td>부족하면?</td><td>앱이 느려지거나 다시 로딩됨</td><td>“저장 공간 부족” 알림, 설치·촬영 불가</td></tr>
+      </table></div>
+      <p class="sub" style="margin-top:10px"><b>풀이 방법</b><br>① 설명을 읽고 <b>“전원을 꺼도 남는가?”</b>를 먼저 떠올려요. 남으면 내장 메모리, 사라지면 RAM!<br>② <b>“지금 하는 일을 돕는가, 보관하는가?”</b>를 생각해요. 지금 작업이면 RAM, 보관이면 내장 메모리!<br>③ 상황 문제는 <b>어떤 문제가 생겼는지</b>(느려짐/다시 로딩 vs 저장 공간 부족)를 보고 골라요.</p>
+      <div class="quote">💡 비유: RAM = 일할 때 쓰는 <b>책상</b> / 내장 메모리 = 물건을 보관하는 <b>서랍장</b></div>
+      <h3>① 설명이 어느 쪽인지 고르기</h3>
+      <div id="sort"></div>
+      <h3>② 이런 상황, 어떤 부품이 부족할까?</h3>
+      <div id="sit"></div>
+      <div class="score" id="sc3"></div>
+    </div>
+    <button class="btn" id="chk3">정답 확인 및 제출</button><button class="btn s" id="sv2">🖼 화면 이미지로 저장 (제출용)</button>
+  </section>
+
+  <!-- 4단계 -->
+  <section id="s3" class="hide">
+    <div id="cap3" class="card">
+      <div class="capH"><span>4단계 · RAM · ROM · 보조기억장치(내장 메모리) 비교</span><span>제출자: <b class="whoN">-</b></span></div>
+      <h2>세 가지 메모리, 무엇이 다를까?</h2>
+      <div class="quote">📌 주기억장치 = <b>RAM + ROM</b> / 보조기억장치 = 내장 메모리(저장장치)</div>
+      <p class="sub">전원을 껐다 켜도 내용이 남는지(비휘발성), 쓰고 지울 수 있는지, 속도와 용량을 중심으로 비교해요.</p>
+      <div class="cmp"><table>
+        <thead><tr><th>구분</th><th>RAM</th><th>ROM</th><th>내장 메모리(보조기억장치)</th></tr></thead>
+        <tr><td>컴퓨터에서의 역할</td><td>주기억장치 (작업대)</td><td>주기억장치 (기본 프로그램을 담은 설명서 책)</td><td>보조기억장치 (창고·서랍장)</td></tr>
+        <tr><td>전원을 끄면?</td><td>내용이 사라짐 (휘발성)</td><td>내용이 유지됨 (비휘발성)</td><td>내용이 유지됨 (비휘발성)</td></tr>
+        <tr><td>읽기·쓰기</td><td>자유롭게 읽고 쓰기 가능</td><td>주로 읽기 위주, 사용자가 바꾸기 어려움</td><td>자유롭게 읽고 쓰기 가능</td></tr>
+        <tr><td>속도</td><td>가장 빠름</td><td>비교적 느림</td><td>RAM보다 느림</td></tr>
+        <tr><td>용량</td><td>중간 (4~16GB 정도)</td><td>매우 작음 (KB~MB 단위)</td><td>가장 큼 (128GB~1TB 정도)</td></tr>
+        <tr><td>저장하는 내용</td><td>지금 실행 중인 앱·작업</td><td>부팅 프로그램 등 기기를 켜는 데 꼭 필요한 기본 프로그램</td><td>사진, 영상, 앱, 문서 파일</td></tr>
+        <tr><td>스마트폰 예시</td><td>스펙표의 “RAM 8GB”</td><td>기기 내부의 부팅용 기본 프로그램 저장 칩</td><td>스펙표의 “내장 메모리 256GB(UFS)”</td></tr>
+      </table></div>
+      <div class="quote" style="margin-top:10px">⚠ 주의: 스마트폰 광고에서 “ROM 256GB”라고 하는 것은 보통 <b>내장 저장공간(보조기억장치)</b>을 가리키는 말이에요. 엄밀한 의미의 ROM은 용량이 아주 작은 기본 프로그램 저장용 메모리예요.</div>
+      <h3>확인 문제: 어디에 해당할까요?</h3>
+      <div id="rq"></div>
+      <div class="score" id="sc4"></div>
+    </div>
+    <button class="btn" id="chk4">정답 확인 및 제출</button><button class="btn s" id="sv3">🖼 화면 이미지로 저장 (제출용)</button>
+  </section>
+
+  <!-- 5단계 -->
+  <section id="s4" class="hide">
+    <style>
+      .scene{display:flex;align-items:center;gap:6px;margin:10px 0}
+      .mA,.mB{flex:1;min-width:0;border-radius:14px;padding:10px;min-height:178px;border:2px solid;color:#1c2333}
+      .mA{background:#d7ecff;border-color:#4c8dd9}.mB{background:#fff5c9;border-color:#e0b92e}
+      .mh{text-align:center;font-weight:800;font-size:14px;margin-bottom:4px}
+      .chip{margin:6px 0;padding:8px 4px;border-radius:20px;text-align:center;font-weight:700;font-size:12.5px;opacity:0;transform:scale(.5) translateY(14px);transition:opacity .6s,transform .6s}
+      .chip.on{opacity:1;transform:none}
+      .chip.os{background:#9fe6e0}.chip.app{background:#cdb4f6}.chip.dat{background:#ffd479;border:1px solid #e0a800}
+      .mid{text-align:center;width:58px;flex:none}
+      .rom{font-size:11px;font-weight:800;background:var(--card);border:2px dashed var(--line);border-radius:8px;padding:4px 2px;margin-bottom:8px;transition:.4s}
+      .rom.glow{border-color:#e8590c;border-style:solid;color:#e8590c;animation:gl 1s ease-in-out 3}
+      @keyframes gl{50%{transform:scale(1.18)}}
+      .ar{font-size:26px;color:var(--sub)}.ar.go{animation:ar 1.2s ease-in-out}
+      @keyframes ar{30%{transform:scale(1.5);color:var(--pri)}}
+      .fade{animation:fd .5s ease}@keyframes fd{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+      .dots{display:flex;gap:6px;justify-content:center;margin:6px 0}.dots i{width:9px;height:9px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--pri);transform:scale(1.3)}
+      .desc{font-size:16px;line-height:2.1}
+      .hint{background:var(--priS);color:var(--pri);border-radius:10px;padding:8px 12px;font-size:14px;margin:8px 0}
+      select.bl{font-weight:700;min-width:92px}
+    </style>
+    <div id="cap4" class="card">
+      <div class="capH"><span>5단계 · 컴퓨터 동작 원리 (RAM과 보조기억장치)</span><span>제출자: <b class="whoN">-</b></span></div>
+      <div class="sub" id="wb"></div>
+      <div class="scene">
+        <div class="mA"><div class="mh">RAM<br><small>(주기억장치)</small></div><div class="chip os" id="r-os">운영체제</div><div class="chip app" id="r-app">응용 SW(한글)</div><div class="chip dat" id="r-data">자료</div></div>
+        <div class="mid"><div class="rom" id="rom">ROM<br>BIOS</div><div class="ar" id="ar">⇄</div></div>
+        <div class="mB"><div class="mh">보조기억장치<br><small>(하드디스크·내장 메모리)</small></div><div class="chip os" id="s-os">운영체제</div><div class="chip app" id="s-app">응용 SW(한글)</div><div class="chip dat" id="s-data">자료</div></div>
+      </div>
+      <div class="dots" id="dots"></div>
+      <div id="stp" class="fade"></div>
+    </div>
+    <button class="btn g" id="pvb">◀ 이전</button><button class="btn" id="nxb">다음 ▶</button><button class="btn s" id="sv4">🖼 화면 이미지로 저장 (제출용)</button>
+  </section>
+</div>
+
+<div id="ov"><div class="box">
+  <b>저장 이미지가 만들어졌어요!</b>
+  <p class="sub">아래 [이미지 저장] 버튼을 누르세요. 저장이 안 되면 이미지를 <b>길게 누르거나 우클릭 → 이미지 저장</b>을 하거나 화면을 캡처해 제출하세요.</p>
+  <a id="dl" class="btn" download="제출.png" style="display:inline-block;text-decoration:none">⬇ 이미지 저장</a>
+  <button class="btn g" onclick="document.getElementById('ov').style.display='none'">닫기</button>
+  <img id="pv" alt="저장 이미지">
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const ROLES={in:'입력장치',out:'출력장치',cpu:'연산·제어(중앙처리장치)',main:'주기억장치',sub:'보조기억장치',none:'5대 요소 아님(전원)'};
+// 탭
+$$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.toggle('on',x===b));$$('section').forEach((s,i)=>s.classList.toggle('hide',i!=b.dataset.t))});
+const who=()=>{$$('.whoN').forEach(e=>e.textContent=$('#nm').value||'(이름 미입력)')};
+const mk=()=>{$('#nm').value=['#sch','#sid','#snm'].map(s=>$(s).value.trim()).filter(Boolean).join(' ');who()};['#sch','#sid','#snm'].forEach(s=>$(s).oninput=mk);who();
+
+// 1단계
+$('#done1').onclick=()=>{
+  const ids=['model','in','hz','cam','ap','ram','sto','bat'];
+  if(ids.some(i=>!$('#i_'+i).value.trim())){$('#m1').textContent='빈칸이 남아 있어요. 모두 입력해 주세요.';return}
+  $('#m1').textContent='';const v=i=>$('#i_'+i).value.trim();
+  const items=[
+   ['디스플레이',`${v('in')}인치 · ${v('hz')}Hz`,'out','출력장치','처리 결과를 사람이 눈으로 볼 수 있게 보여 줘요.<br><b>주사율(Hz)</b>은 1초 동안 화면이 새로 그려지는 횟수예요. 60Hz는 1초에 60번, 120Hz는 120번 화면을 바꿔요. 숫자가 클수록 스크롤·게임 속 움직임이 더 부드럽게 보이지만, 화면을 더 자주 그리느라 배터리를 더 많이 써요.'],
+   ['카메라',`${v('cam')} 화소`,'in','입력장치','빛(사진·영상)을 데이터로 바꿔 폰에 전달해요. 터치스크린·마이크도 입력장치예요.'],
+   ['AP(칩셋)',v('ap'),'cpu','연산·제어장치 = 중앙처리장치(CPU)','AP는 CPU를 중심으로 GPU·통신 기능까지 한 칩에 모은 것(SoC). 계산하고 모든 장치에 명령을 내리는 두뇌예요.'],
+   ['RAM',`${v('ram')}GB`,'main','주기억장치','지금 실행 중인 앱·작업 내용을 잠시 올려 두는 작업대. 전원이 꺼지면 사라져요. (주기억장치에는 기본 프로그램을 담은 ROM도 포함돼요.)'],
+   ['저장 용량',`${v('sto')}GB`,'sub','보조기억장치','사진·영상·앱 파일을 오래 보관하는 창고. 전원이 꺼져도 유지돼요.'],
+   
+   ['배터리',`${v('bat')}mAh`,'none','전원 공급 부품','컴퓨터 5대 요소에는 속하지 않지만 모든 장치가 작동하도록 전기를 공급해요.']];
+  $('#map').innerHTML=`<div class="quote">조사한 스마트폰: <b>${v('model')}</b>${v('etc')?' · 기타 사양: '+v('etc'):''}</div>`+items.map(i=>`<div class="mi"><div><b>${i[0]}</b><br><b class="v">${i[1]}</b></div><div class="arrow">➜</div><div><span class="tag">${i[3]}</span><br>${i[4]}</div></div>`).join('');
+  $('#p2').classList.remove('hide');$('#p2').scrollIntoView({behavior:'smooth'});
+};
+const PARTS=[['디스플레이','out','화면은 결과를 눈으로 보여 주는 출력장치예요.'],['카메라','in','빛을 데이터로 받아들이는 입력장치예요.'],['AP(칩셋)','cpu','계산(연산)과 제어를 맡은 중앙처리장치 역할이에요.'],['RAM','main','실행 중인 작업을 잠시 올리는 주기억장치예요.'],['ROM(부팅 프로그램 보관)','main','ROM도 RAM과 함께 주기억장치에 속해요. 기본 프로그램을 저장해요.'],['내장 메모리(UFS)','sub','자료를 영구 보관하는 보조기억장치예요.'],['스피커','out','소리로 결과를 내보내는 출력장치예요.'],['마이크','in','소리를 받아들이는 입력장치예요.'],['터치스크린(터치 입력)','in','손가락 명령을 전달하므로 입력장치예요.'],['배터리','none','전원 공급 부품으로 5대 요소에 속하지 않아요.']];
+const opts='<option value="">선택</option>'+Object.entries(ROLES).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
+$('#to3').onclick=()=>{
+  $('#mt').innerHTML=PARTS.map((p,i)=>`<div class="row"><span class="nm">${p[0]}</span><select data-i="${i}">${opts}</select><div class="fb hide"></div></div>`).join('');
+  $('#p3').classList.remove('hide');$('#act1').classList.remove('hide');$('#p3').scrollIntoView({behavior:'smooth'});
+};
+$('#chk1').onclick=()=>{
+  let c=0;$$('#mt select').forEach(s=>{const p=PARTS[s.dataset.i],ok=s.value===p[1],fb=s.parentNode.querySelector('.fb');
+    if(ok)c++;s.className=ok?'ok':'no';fb.className='fb '+(ok?'ok':'no');
+    fb.textContent=(ok?'⭕ 정답! ':'❌ 정답: '+ROLES[p[1]]+' — ')+p[2];});
+  $('#sc1').textContent=`결과: ${PARTS.length}문제 중 ${c}개 정답`;
+};
+
+// 2단계
+const Q=[['“나는 배틀그라운드 같은 게임을 자주 하는 유저야.”','ap','AP는 그래픽 연산·처리 속도를 좌우해요. 고사양 게임은 AP 성능이 가장 중요해요. (발열 관리와 RAM도 도움이 돼요.)'],
+['“나는 사진·영상 촬영만 많이 하는 유저야.”','sto','촬영 파일은 용량이 커서 보조기억장치(저장공간)가 가장 중요해요. 부족하면 더 찍을 수 없어요.'],
+['“나는 앱을 여러 개 켜 두고 자주 전환하는 유저야.”','ram','여러 앱을 동시에 올려 두는 작업대가 RAM이므로 RAM이 클수록 앱이 덜 꺼지고 빨라요.']];
+$('#qs').innerHTML=Q.map((q,i)=>`<div class="q"><div class="quote">문제 ${i+1}. ${q[0]}</div><div class="sub" style="margin-top:6px">가장 중요한 부품은?</div>
+<div class="opts">${[['ap','AP'],['ram','RAM'],['sto','저장공간']].map(o=>`<label class="opt"><input type="radio" name="q${i}" value="${o[0]}"><span>${o[1]}</span></label>`).join('')}</div>
+<textarea id="r${i}" placeholder="그렇게 생각한 이유를 써 보세요."></textarea><div class="fb hide" id="f${i}"></div></div>`).join('');
+$('#chk2').onclick=()=>{
+  if(Q.some((q,i)=>!$(`input[name=q${i}]:checked`))){$('#sc2').textContent='모든 문제에서 부품을 골라 주세요.';return}
+  let c=0;Q.forEach((q,i)=>{const a=$(`input[name=q${i}]:checked`).value,ok=a===q[1];if(ok)c++;const f=$('#f'+i);
+    f.className='fb '+(ok?'ok':'no');f.textContent=(ok?'⭕ 정답! ':'❌ 정답: '+{ap:'AP',ram:'RAM',sto:'저장공간'}[q[1]]+' — ')+q[2]});
+  $('#sc2').textContent=`결과: ${Q.length}문제 중 ${c}개 정답 · 저장 버튼으로 이미지를 만들어 제출하세요.`;
+};
+
+// 스펙 조합
+const SP=[['ap','AP(칩셋)',[['보급형',10],['중급형',20],['고급형',30],['플래그십',40]]],['ram','RAM',[['4GB',5],['8GB',10],['12GB',15],['16GB',20]]],['sto','저장공간',[['64GB',5],['128GB',10],['256GB',18],['512GB',25]]],['cam','카메라',[['1200만 화소',5],['5000만 화소',10],['2억 화소',15]]],['bat','배터리',[['3000mAh',4],['4500mAh',7],['5000mAh',10]]]];
+$('#sp').innerHTML=SP.map(p=>`<div class="row"><span class="nm">${p[1]}</span><select class="cs" data-k="${p[0]}"><option value="">선택</option>${p[2].map(o=>`<option value="${o[1]}">${o[0]} (${o[1]}점)</option>`).join('')}</select></div>`).join('');
+function upd(){
+  const sel={};let sum=0,cnt=0,top=['',0];
+  $$('.cs').forEach(s=>{const k=s.dataset.k;sel[k]=s.selectedIndex-1;if(s.value){const c=+s.value;sum+=c;cnt++;if(c>top[1])top=[SP.find(p=>p[0]==k)[1],c]}});
+  const over=sum>100;$('#pt').innerHTML=`사용 점수 <b>${sum}</b> / 100`+(over?` — ⚠ ${sum-100}점 초과! 하나를 낮춰 보세요`:` (남은 점수 ${100-sum})`);
+  $('#pb').style.width=Math.min(sum,100)+'%';$('#pb').style.background=over?'var(--no)':'var(--pri)';
+  const t=$('#ut').value,L=[];const ok=(c,y,n)=>L.push([c,c?y:n]);
+  if(cnt==SP.length&&t){
+    if(t=='g'){ok(sel.ap>=2,'AP를 고급형 이상으로 선택했어요. 게임에는 AP가 가장 중요해요!','게임 유저는 AP를 고급형 이상으로 하는 게 좋아요.');ok(sel.ram>=1,'RAM도 8GB 이상이라 게임이 안 끊겠어요.','RAM이 너무 작으면 게임 중 앱이 다시 로딩될 수 있어요.')}
+    if(t=='p'){ok(sel.sto>=2,'저장공간을 256GB 이상으로 선택했어요. 촬영 파일이 클수록 저장공간이 중요해요!','사진·영상 유저는 저장공간을 256GB 이상으로 하는 게 좋아요.');ok(sel.cam>=1,'카메라 화소도 충분해요.','카메라를 조금 더 올려 보세요.')}
+    if(t=='m'){ok(sel.ram>=2,'RAM을 12GB 이상으로 선택했어요. 여러 앱을 올려 둔 작업대가 넓어요!','멀티태스킹은 RAM이 핵심이에요. 12GB 이상을 추천해요.');ok(sel.ap>=1,'AP도 중급형 이상이라 앱 전환이 수월해요.','AP도 중급형 이상이면 더 좋아요.')}
+    if(t=='v')ok(sum<=60,'60점 이하로 가성비 있게 골랐어요.','가성비 유저라면 60점 이하로 맞춰 보세요.');
+    ok(!over,'100점 예산 안에서 완성했어요.','예산(100점)을 넘었어요.');
+    L.push([true,`가장 많이 투자한 부품: ${top[0]} (${top[1]}점)`]);
+  }else if(cnt==SP.length)L.push([false,'나는 이런 유저 항목도 골라 주세요.']);
+  $('#cf').innerHTML=L.map(l=>`<div class="fb ${l[0]?'ok':'no'}" style="margin-top:4px">${l[0]?'⭕':'⚠'} ${l[1]}</div>`).join('');
+}
+$$('.cs,#ut').forEach(s=>s.onchange=upd);upd();
+// 3단계
+const S=[['전원을 끄면 저장된 내용이 사라진다','R'],['사진·영상·앱 파일을 오래 보관한다','S'],['지금 실행 중인 앱의 작업 내용을 잠시 올려 둔다','R'],['용량이 128GB, 256GB처럼 큰 편이다','S'],['전원이 꺼져도 내용이 그대로 남아 있다','S'],['클수록 여러 앱을 켜 놔도 잘 안 튕긴다','R'],['컴퓨터에서 “주기억장치”에 해당한다','R'],['컴퓨터에서 “보조기억장치”에 해당한다','S']];
+const T=[['갤러리 사진이 가득 차서 “저장 공간 부족” 알림이 떴다.','S'],['게임 하다가 카톡을 보고 돌아왔더니 게임이 처음부터 다시 로딩된다.','R'],['새 앱을 설치하려는데 용량이 부족하다고 한다.','S']];
+const rs=(n,i)=>`<label class="opt"><input type="radio" name="${n}${i}" value="R"><span>RAM</span></label><label class="opt"><input type="radio" name="${n}${i}" value="S"><span>내장 메모리</span></label>`;
+$('#sort').innerHTML=S.map((s,i)=>`<div class="row"><span style="flex:1;min-width:200px">${s[0]}</span><div class="opts" style="flex:0 0 230px;margin:0">${rs('a',i)}</div><div class="fb hide"></div></div>`).join('');
+$('#sit').innerHTML=T.map((s,i)=>`<div class="row"><span style="flex:1;min-width:200px">${s[0]}</span><div class="opts" style="flex:0 0 230px;margin:0">${rs('b',i)}</div><div class="fb hide"></div></div>`).join('');
+$('#chk3').onclick=()=>{
+  let c=0,all=0,miss=0;
+  [['a',S],['b',T]].forEach(([n,arr])=>arr.forEach((s,i)=>{all++;const a=$(`input[name=${n}${i}]:checked`),row=$(`input[name=${n}${i}]`).closest('.row'),fb=row.querySelector('.fb');
+    if(!a){miss++;return}const ok=a.value===s[1];if(ok)c++;fb.className='fb '+(ok?'ok':'no');fb.textContent=ok?'⭕ 정답':'❌ 정답: '+(s[1]=='R'?'RAM':'내장 메모리')}));
+  $('#sc3').textContent=miss?`아직 고르지 않은 문제가 ${miss}개 있어요.`:`결과: ${all}문제 중 ${c}개 정답`;
+};
+
+// 이미지 저장
+function needName(){const ins=['#sch','#sid','#snm'].map(s=>$(s)),a=$('#nameAlert');
+  if(ins.every(i=>i.value.trim())){a.classList.add('hide');return true}
+  a.textContent='⛔ 이미지를 저장하기 전에 맨 위의 학교 · 학번 · 이름을 먼저 입력해 주세요! (이미지에 제출자 이름이 찍혀야 제출할 수 있어요)';a.classList.remove('hide');
+  a.style.animation='none';void a.offsetWidth;a.style.animation='';
+  ins.forEach(i=>{i.classList.remove('miss');void i.offsetWidth;i.classList.toggle('miss',!i.value.trim())});$('.who').classList.add('warn');
+  window.scrollTo({top:0,behavior:'smooth'});ins.find(i=>!i.value.trim()).focus({preventScroll:true});return false}
+['#sch','#sid','#snm'].forEach(s=>$(s).addEventListener('input',()=>{if(['#sch','#sid','#snm'].every(x=>$(x).value.trim()))$('#nameAlert').classList.add('hide')}));
+function save(capId,name){
+  who();
+  if(!needName())return;const el=$(capId),bg=getComputedStyle(document.body).backgroundColor;
+  if(typeof html2canvas==='undefined'){alert('이미지 도구를 불러오지 못했어요. 화면을 직접 캡처해 제출해 주세요.');return}
+  // textarea/select 값을 이미지에 확실히 반영
+  html2canvas(el,{scale:2,backgroundColor:bg,useCORS:true,ignoreElements:e=>!!(e.classList&&(e.classList.contains('nocap')||e.classList.contains('hint')))||e.tagName==='BUTTON'}).then(cv=>{
+    const u=cv.toDataURL('image/png');$('#pv').src=u;$('#dl').href=u;
+    $('#dl').download=`${name}_${($('#nm').value||'이름').replace(/\s+/g,'')}.png`;$('#ov').style.display='block';
+  }).catch(()=>alert('저장에 실패했어요. 화면을 직접 캡처해 주세요.'));
+}
+$('#sv0').onclick=()=>save('#cap0','1단계');$('#sv1').onclick=()=>save('#cap1','2단계');$('#sv2').onclick=()=>save('#cap2','3단계');
+// 4단계
+const R3=[['폰을 켤 때 가장 먼저 실행되는 부팅용 기본 프로그램이 들어 있다.','ROM','부팅용 기본 프로그램은 전원이 꺼져도 남아 있어야 하므로 ROM에 보관해요.'],['전원을 끄면 내용이 사라지고, 읽기·쓰기가 가장 빠르다.','RAM','휘발성이면서 가장 빠른 것은 RAM이에요.'],['사진·영상·설치한 앱을 오래 보관하며 용량이 가장 크다.','내장','대용량 영구 보관은 보조기억장치(내장 메모리)의 역할이에요.'],['제조사가 미리 기록해 두어 사용자가 거의 바꿀 수 없다.','ROM','ROM은 주로 읽기용이라 내용을 바꾸기 어려워요.'],['앱을 여러 개 켜 두면 부족해질 수 있다.','RAM','동시에 올려 두는 작업 공간이 RAM이에요.'],['“저장 공간이 부족합니다” 알림과 관련 있다.','내장','저장공간은 내장 메모리(보조기억장치)예요.']];
+$('#rq').innerHTML=R3.map((s,i)=>`<div class="row"><span style="flex:1;min-width:200px">${s[0]}</span><div class="opts" style="flex:0 0 300px;margin:0">${[['RAM','RAM'],['ROM','ROM'],['내장','내장 메모리']].map(o=>`<label class="opt"><input type="radio" name="c${i}" value="${o[0]}"><span>${o[1]}</span></label>`).join('')}</div><div class="fb hide"></div></div>`).join('');
+$('#chk4').onclick=()=>{let c=0,m=0;R3.forEach((s,i)=>{const a=$(`input[name=c${i}]:checked`),fb=$(`input[name=c${i}]`).closest('.row').querySelector('.fb');if(!a){m++;return}const ok=a.value===s[1];if(ok)c++;fb.className='fb '+(ok?'ok':'no');fb.textContent=(ok?'⭕ 정답! ':'❌ 정답: '+(s[1]=='내장'?'내장 메모리':s[1])+' — ')+s[2]});$('#sc4').textContent=m?`아직 고르지 않은 문제가 ${m}개 있어요.`:`결과: ${R3.length}문제 중 ${c}개 정답`};
+$('#sv3').onclick=()=>save('#cap3','4단계');
+// 5단계
+const OPT=['RAM','ROM','보조기억장치','로딩','사라진다','유지된다'],IDS=['os','app','data'];
+const ST=[
+{t:'시작: 아무것도 없는 컴퓨터',d:'아직 아무것도 설치되지 않은 컴퓨터예요. 왼쪽은 <b>RAM</b>(작업대), 오른쪽은 <b>보조기억장치</b>(창고)! <b>다음</b>을 눌러 컴퓨터가 일하는 과정을 따라가 봐요.',a:[],r:[],s:[]},
+{t:'운영체제 설치',d:'컴퓨터·스마트폰을 쓰려면 <b>운영체제</b>(컴퓨터 Windows, 스마트폰 Android·iOS)를 설치해야 해요. 운영체제는 {}에 설치돼요.',a:['보조기억장치'],h:'전원을 꺼도 남아 있어야 하니까 오래 보관하는 “창고” 역할의 장치예요.',r:[],s:['os'],ex:'운영체제는 전원이 꺼져도 남아야 하므로 보조기억장치에 설치돼요.'},
+{t:'부팅 (전원 켜기)',d:'컴퓨터를 켜는 과정을 <b>부팅</b>이라고 해요. 전원을 누르면 {}의 BIOS 프로그램이 {}에 있는 운영체제를 불러와요. 불러온 운영체제는 {}에 올라와요(로딩).',a:['ROM','보조기억장치','RAM'],h:'기본 프로그램을 담은 “설명서 책”은 ROM, 운영체제가 있던 곳은 창고, 지금 작업을 올리는 곳은 작업대예요.',r:['os'],s:['os'],late:['r-os'],rom:1,ex:'ROM의 BIOS가 보조기억장치의 운영체제를 RAM으로 불러와요(복사). 보조기억장치에도 운영체제는 그대로 남아요.'},
+{t:'응용 소프트웨어 설치',d:'필요한 응용 소프트웨어(한글, 인터넷, 게임 등)는 {}에 설치돼요. 이곳에 설치 공간이 부족하면 설치할 수 없어요.',a:['보조기억장치'],h:'“저장공간 부족” 알림이 뜨는 그곳! 오래 보관하는 창고예요.',r:['os'],s:['os','app'],ex:'앱은 오래 보관하는 보조기억장치에 설치돼요. 그래서 저장공간이 부족하면 설치할 수 없어요.'},
+{t:'응용 소프트웨어 실행',d:'앱을 더블클릭 또는 터치하면 실행돼요. 실행 중인 프로그램은 {}에 {}되며, {}의 공간이 부족하면 프로그램이 느려지거나 멈출 수 있어요.',a:['RAM','로딩','RAM'],h:'지금 하는 일을 올려 두는 “작업대”예요. 작업대가 좁으면 일이 느려져요.',r:['os','app'],s:['os','app'],late:['r-app'],ex:'실행 중인 프로그램은 RAM에 로딩돼요. RAM이 부족하면 느려지거나 멈출 수 있어요.'},
+{t:'문서 작성하고 저장하기',d:'한글에서 문서를 작성하면 {}에 자료가 생기고, 이를 저장하면 {}에도 저장돼요.',a:['RAM','보조기억장치'],h:'작성 중인 자료는 작업대에, 저장하면 창고에도 보관돼요.',r:['os','app','data'],s:['os','app','data'],late:['s-data'],ex:'작성 중인 자료는 RAM에 생기고, 저장하면 보조기억장치에 보관돼요.'},
+{t:'응용 소프트웨어 종료',d:'한글을 종료하면 RAM에 있던 한글과 자료는 {}. 하지만 저장해 둔 자료는 {}에 남아 있어요.',a:['사라진다','보조기억장치'],h:'작업대는 일이 끝나면 치워져요. 저장한 것은 창고에 있어요.',r:['os'],s:['os','app','data'],ex:'RAM에서는 앱과 자료가 사라지지만, 저장한 자료는 보조기억장치에 그대로 있어요.'},
+{t:'컴퓨터 종료',d:'모든 작업을 끝내고 컴퓨터를 종료하면 RAM의 내용은 운영체제까지 모두 {}. 보조기억장치의 내용은 {}.',a:['사라진다','유지된다'],h:'RAM은 전원이 꺼지면 내용이 어떻게 되는지(휘발성), 보조기억장치는 어떤지(비휘발성) 떠올려요.',r:[],s:['os','app','data'],ex:'RAM은 휘발성이라 전원이 꺼지면 모두 사라지고, 보조기억장치는 비휘발성이라 유지돼요.'}];
+let cur=0;const ANS=ST.map(s=>s.a.map(()=>'')),LAST=ST.length;
+$('#wb').innerHTML='<b>단어 은행</b> '+OPT.map(o=>`<span class="tag">${o}</span>`).join(' ');
+$('#dots').innerHTML=Array(LAST+1).fill('<i></i>').join('');
+function scene(st){['r','s'].forEach(p=>IDS.forEach(k=>{const e=$(`#${p}-${k}`),id=p+'-'+k;e.style.transitionDelay=(st.late||[]).includes(id)?'.9s':'0s';e.classList.toggle('on',(st[p]||[]).includes(k))}));
+  $('#rom').classList.toggle('glow',!!st.rom);const a=$('#ar');a.classList.remove('go');void a.offsetWidth;a.classList.add('go')}
+function sum(){let c=0,t=0;const rows=ST.slice(1).map((s,i)=>{const k=i+1,ok=s.a.map((x,j)=>ANS[k][j]===x);t+=ok.length;c+=ok.filter(Boolean).length;
+  return `<div class="fb ${ok.every(Boolean)?'ok':'no'}" style="margin-top:4px"><b>${k}. ${s.t}</b> — 내 답: ${s.a.map((x,j)=>(ANS[k][j]||'미입력')+(ANS[k][j]===x?' ⭕':' ❌(정답 '+x+')')).join(' / ')}</div>`});
+  return `<div class="score">결과: 빈칸 ${t}개 중 ${c}개 정답</div>`+rows.join('')}
+function render(){
+  const st=ST[Math.min(cur,LAST-1)];scene(st);
+  $$('#dots i').forEach((d,i)=>d.classList.toggle('on',i<=cur));
+  const box=$('#stp');box.classList.remove('fade');void box.offsetWidth;box.classList.add('fade');
+  if(cur==LAST){box.innerHTML='<span class="badge">정리</span><h2>내 답안 확인</h2><p class="sub">모든 단계의 빈칸을 채점해요. 아래 결과까지 이미지로 저장해 제출하세요.</p><button class="btn g" id="ga">전체 채점하기</button><div id="sm"></div>';
+    $('#ga').onclick=()=>{$('#sm').innerHTML=sum()}}
+  else{let n=0;const d=st.d.replace(/\{\}/g,()=>{const j=n++;return `<select class="bl" data-j="${j}"><option value="">?</option>${OPT.map(o=>`<option${ANS[cur][j]===o?' selected':''}>${o}</option>`).join('')}</select>`});
+    box.innerHTML=`<span class="badge">${cur?'STEP '+cur:'시작'}</span><h2>${st.t}</h2><p class="desc">${d}</p>`+(st.h?`<div class="hint">💡 힌트: ${st.h}</div>`:'')+(st.a.length?'<button class="btn g" id="ck">확인</button><div id="ex"></div>':'');
+    $$('#stp select.bl').forEach(s=>s.onchange=()=>{ANS[cur][s.dataset.j]=s.value;s.className='bl'});
+    if(st.a.length)$('#ck').onclick=()=>{let all=true;$$('#stp select.bl').forEach(s=>{const ok=s.value===st.a[s.dataset.j];if(!ok)all=false;s.className='bl '+(ok?'ok':'no')});
+      $('#ex').innerHTML=`<div class="fb ${all?'ok':'no'}">${all?'⭕ 정답! '+st.ex:'❌ 틀린 칸이 있어요. 힌트와 단어 은행을 참고해 다시 골라 보세요.'}</div>`}}
+  $('#pvb').disabled=cur==0;$('#nxb').disabled=cur==LAST;
+}
+$('#pvb').onclick=()=>{if(cur>0){cur--;render()}};$('#nxb').onclick=()=>{if(cur<LAST){cur++;render()}};
+$('#sv4').onclick=()=>save('#cap4','5단계');render();
+
+// 1단계 저장 이미지: 학생이 직접 기입한 부분만 포함 (구성도·설명 카드·버튼은 제외)
+(()=>{const kids=[...$('#cap0').children],i=kids.findIndex(k=>k.textContent.trim()==='활동 ①');
+  if(i>1)kids.slice(1,i).forEach(k=>k.classList.add('nocap'));
+  ['#m1','#done1','#p2'].forEach(s=>$(s).classList.add('nocap'))})();
+// 2~5단계 저장 이미지도 학생이 기입한 부분 중심으로 (설명·비교표·애니메이션 장면 제외)
+(()=>{const cut=id=>{const k=[...$(id).children],i=k.findIndex(x=>x.tagName==='H3');if(i>1)k.slice(1,i).forEach(x=>x.classList.add('nocap'))};cut('#cap2');cut('#cap3');
+  $$('#cap1 p.sub').forEach(x=>x.classList.add('nocap'));
+  ['#cap4 .scene','#wb','#dots'].forEach(s=>$(s).classList.add('nocap'))})();
+
+// ===== 구글 스프레드시트 전송 (3·4단계) =====
+// Apps Script 웹 앱 URL을 아래 따옴표 안에 붙여넣으세요.
+const SHEET_URL='https://script.google.com/macros/s/AKfycbz6XyspWzvI8aXONmshWoH2h8BsHWVXKYZAQtXS1DftBEtbq1NZnuPXoNMFucz-EamlPQ/exec';
+const LB={R:'RAM',S:'내장 메모리','내장':'내장 메모리',RAM:'RAM',ROM:'ROM'};
+const items3=[...S.map((s,i)=>({q:s[0],n:'a'+i,right:s[1]})),...T.map((s,i)=>({q:s[0],n:'b'+i,right:s[1]}))];
+const items4=R3.map((s,i)=>({q:s[0],n:'c'+i,right:s[1]}));
+$('#sc3').insertAdjacentHTML('afterend','<div class="sub" id="tx3"></div>');
+$('#sc4').insertAdjacentHTML('afterend','<div class="sub" id="tx4"></div>');
+function say(o,m,bad){o.className=bad?'alertbar':'sub';o.textContent=m}
+['#sch','#sid','#snm'].forEach(s=>$(s).addEventListener('input',()=>{$(s).classList.remove('miss');if(!$$('.who input.miss').length)$('.who').classList.remove('warn')}));
+function pack(step,items,tx){
+  const out=$('#'+tx),sch=$('#sch').value.trim(),sid=$('#sid').value.trim(),nm=$('#snm').value.trim();
+  const picks=items.map(it=>{const a=$(`input[name=${it.n}]:checked`);return a?a.value:null});
+  if(picks.some(p=>p===null))return;
+  if(!sch||!sid||!nm){say(out,'⛔ 전송 실패! 맨 위의 학교 · 학번 · 이름을 모두 입력한 뒤, 다시 [정답 확인 및 제출]을 눌러 주세요. (입력하지 않으면 선생님께 결과가 가지 않아요!)',true);
+    const ins=['#sch','#sid','#snm'].map(s=>$(s));ins.forEach(i=>{i.classList.remove('miss');void i.offsetWidth;i.classList.toggle('miss',!i.value.trim())});
+    $('.who').classList.add('warn');$('.who').scrollIntoView({behavior:'smooth',block:'center'});const f=ins.find(i=>!i.value.trim());if(f)f.focus({preventScroll:true});return}
+  if(SHEET_URL.includes('여기에')){out.textContent='';return}
+  const res=picks.map((p,i)=>p===items[i].right?'O':'X→'+LB[p]);
+  const body={step,school:sch,sid,name:nm,score:res.filter(r=>r==='O').length,total:items.length,qs:items.map((it,i)=>'Q'+(i+1)+'. '+it.q),res};
+  say(out,'전송 중…');
+  fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)})
+    .then(()=>say(out,'✅ 결과가 선생님께 전송되었어요. (제출 완료)'))
+    .catch(()=>say(out,'⛔ 전송에 실패했어요! 인터넷 연결을 확인하고 다시 눌러 보세요. 계속 안 되면 저장 이미지로 제출해 주세요.',true));
+}
+$('#chk3').addEventListener('click',()=>pack('3',items3,'tx3'));
+$('#chk4').addEventListener('click',()=>pack('4',items4,'tx4'));
+</script>
+</body>
+</html>
